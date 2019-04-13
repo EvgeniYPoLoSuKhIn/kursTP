@@ -28,7 +28,7 @@ class Singleton {
       return instance;
    }
    void getcreature(){
-    cout << "Введите название монстра\n";
+    cout << "\nВведите название монстра\n";
     cin >> name;
     cout << "Из какой он мифологии?\n";
     cin >> mifolog;
@@ -112,8 +112,6 @@ class Singleton {
         catch(int i)
         {
             cout<<"error "<<i<< " - файл отсутствует!"<<endl;
-            ofstream outfile("text.txt", ios::app);
-            outfile.close();
         }
      }
 
