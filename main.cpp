@@ -4,12 +4,33 @@
 #include<fstream>
 using namespace std;
 
+class Singleton;
+class SingletonDestroyer
+{
+  private:
+    Singleton* instance;
+  public:
+    ~SingletonDestroyer(){
+    delete instance;
+    }
+    void initialize( Singleton* p ){
+    instance = p;
+    }
+};
+
 class Singleton {
+
+     protected:
+    Singleton() { }
+    Singleton( const Singleton& );
+    Singleton& operator=( Singleton& );
+   ~Singleton() { }
+   friend class SingletonDestroyer;
+
 
    private:
    static Singleton *instance;
-
-   Singleton(){}
+   static SingletonDestroyer destroyer;
     char* name=new char[50];
     char* razmer=new char[50];
     char* cvet=new char[50];
@@ -21,10 +42,13 @@ class Singleton {
     int tail,wings,legs;
     int clegs=0;
 
+
    public:
    static Singleton *getInstance() {
-      if (!instance)
+      if (!instance){
       instance = new Singleton;
+      destroyer.initialize( instance);
+      }
       return instance;
    }
    void getcreature(){
@@ -125,13 +149,17 @@ class Singleton {
     cout << "\nНаличие ног/лап? (1 - есть; 0 - нет): "<<legs;
     if(legs==1)
     cout << "\nКоличество ног(лапы): "<<clegs;
-    else clegs=0;
     cout << "\nНаличие крыльев(1 - есть; 0 - нет): "<<wings;
    }
 
+
 };
 
+
+
 Singleton *Singleton::instance = 0;
+SingletonDestroyer Singleton::destroyer;
+
 
 int main(){
     setlocale(LC_ALL, "Russian");
