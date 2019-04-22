@@ -1,7 +1,9 @@
 #include <iostream>
-#include <cstddef>
+//#include <cstddef>
 #include <cstring>
-#include<fstream>
+#include <fstream>
+
+
 using namespace std;
 
 class Singleton;
@@ -20,30 +22,43 @@ class SingletonDestroyer
 
 class Singleton {
 
-     protected:
-    Singleton() { }
-    Singleton( const Singleton& );
-    Singleton& operator=( Singleton& );
-   ~Singleton() { }
-   friend class SingletonDestroyer;
-
-
    private:
+
+   friend class SingletonDestroyer;
+   Singleton( const Singleton& );
+   Singleton& operator=( Singleton& );
    static Singleton *instance;
    static SingletonDestroyer destroyer;
-    char* name=new char[50];
-    char* razmer=new char[50];
-    char* cvet=new char[50];
-    char* svoystva=new char[50];
-    char* mifolog=new char[50];
-    char* opisaniye=new char[50];
-    char* sposobatak=new char[50];
+    char* name;
+    char* razmer;
+    char* cvet;
+    char* svoystva;
+    char* mifolog;
+    char* opisaniye;
+    char* sposobatak;
     char buffer[50];
-    int tail,wings,legs;
+    int tail,wings,legs,flag;
     int clegs=0;
-
+    Singleton() {
+    name=new char[50];
+    razmer=new char[50];
+    cvet=new char[50];
+    svoystva=new char[50];
+    mifolog=new char[50];
+    opisaniye=new char[50];
+    sposobatak=new char[50];}
+     ~Singleton() {
+    delete name;
+    delete razmer;
+    delete cvet;
+    delete svoystva;
+    delete mifolog;
+    delete opisaniye;
+    delete sposobatak;
+    }
 
    public:
+
    static Singleton *getInstance() {
       if (!instance){
       instance = new Singleton;
@@ -76,11 +91,6 @@ class Singleton {
 
    void fenix(){
     ofstream ofs("text.txt", ios::binary| ios::app);
-    ofs.write(reinterpret_cast<char*>(&tail), sizeof(tail));
-    ofs.write(reinterpret_cast<char*>(&wings), sizeof(wings));
-    ofs.write(reinterpret_cast<char*>(&legs), sizeof(legs));
-    ofs.write(reinterpret_cast<char*>(&clegs), sizeof(clegs));
-
     strcpy(buffer,name);
     ofs.write(reinterpret_cast<char*>(&buffer), sizeof(buffer));
     strcpy(buffer,razmer);
@@ -95,10 +105,16 @@ class Singleton {
     ofs.write(reinterpret_cast<char*>(&buffer), sizeof(buffer));
     strcpy(buffer,opisaniye);
     ofs.write(reinterpret_cast<char*>(&buffer), sizeof(buffer));
+
+
+    ofs.write(reinterpret_cast<char*>(&tail), sizeof(tail));
+    ofs.write(reinterpret_cast<char*>(&wings), sizeof(wings));
+    ofs.write(reinterpret_cast<char*>(&legs), sizeof(legs));
+    ofs.write(reinterpret_cast<char*>(&clegs), sizeof(clegs));
     ofs.close();
     }
 
-     void reincornate(){
+     void reincornate(int f, char *nm){
     try
         {
             ifstream ifs("text.txt", ios::binary);
@@ -108,12 +124,10 @@ class Singleton {
             }
             else
             {
-     while(ifs.read(reinterpret_cast<char*>(&tail), sizeof(tail))!=NULL){
-     ifs.read(reinterpret_cast<char*>(&wings), sizeof(wings));
-     ifs.read(reinterpret_cast<char*>(&legs), sizeof(legs));
-     ifs.read(reinterpret_cast<char*>(&clegs), sizeof(clegs));
-
-     ifs.read(reinterpret_cast<char*>(&buffer), sizeof(buffer));
+     while(ifs.read(reinterpret_cast<char*>(&buffer), sizeof(buffer))!=NULL){
+     if(f==3&&strcmp(buffer,nm))
+       ifs.seekg(316,ios::cur);
+     else{
      strcpy(name,buffer);
      ifs.read(reinterpret_cast<char*>(&buffer), sizeof(buffer));
      strcpy(razmer,buffer);
@@ -127,9 +141,29 @@ class Singleton {
      strcpy(sposobatak,buffer);
      ifs.read(reinterpret_cast<char*>(&buffer), sizeof(buffer));
      strcpy(opisaniye,buffer);
+
+
+     ifs.read(reinterpret_cast<char*>(&tail), sizeof(tail));
+     ifs.read(reinterpret_cast<char*>(&wings), sizeof(wings));
+     ifs.read(reinterpret_cast<char*>(&legs), sizeof(legs));
+     ifs.read(reinterpret_cast<char*>(&clegs), sizeof(clegs));
+     if(f==1)
+     cout<<" \n"<<name;
+
+     if(f==0)
      show();
+
+     if(f==2)
+     if(!strcmp(name,nm))
+     show();
+
+     if(f==3){
+        show();
+        break;
      }
 
+     }
+     }
      ifs.close();
             }
         }
@@ -149,8 +183,9 @@ class Singleton {
     cout << "\nНаличие ног/лап? (1 - есть; 0 - нет): "<<legs;
     if(legs==1)
     cout << "\nКоличество ног(лапы): "<<clegs;
-    cout << "\nНаличие крыльев(1 - есть; 0 - нет): "<<wings;
+    cout << "\nНаличие крыльев(1 - есть; 0 - нет): "<<wings<<"\n";
    }
+
 
 
 };
@@ -164,11 +199,13 @@ SingletonDestroyer Singleton::destroyer;
 int main(){
     setlocale(LC_ALL, "Russian");
     Singleton *s = s->getInstance();
-    int button = 1;
+    int button = 1,button2;
+    char nm[50];
 	while (button) {
-    cout << "Выберите действие:\n";
+    cout << "\nВыберите действие:\n";
     cout << "|1| - Создать создание\n";
-    cout << "|2| - Загрузить создания из файла\n";
+    cout << "|2| - Показать создания из файла\n";
+    cout << "|3| - Загрузить создание из файла\n";
     cout << "|0| - Выход.\n";
 		cin >> button;
 		switch (button) {
@@ -177,10 +214,30 @@ int main(){
         s->fenix();
         break;
 		case 2:
-        s->reincornate();
+        cout << "|1| - Показать всю информацию:\n";
+        cout << "|2| - Показать информацию о конкретном создании:\n";
+        cout << "|0| - Выход.\n";
+        cin>>button2;
+        if(button2==1)
+        s->reincornate(0,"");
+        if(button2==2){
+        cout<<"Доступные монстры:";
+        s->reincornate(1,"");
+        cout<<"\nО ком вы бы хотели узнать?\n";
+        cin>>nm;
+        s->reincornate(2,nm);
+        }
+        else
+        break;
         break;
 		case 0:
         break;
+        case 3:
+        cout<<"Доступные монстры:";
+        s->reincornate(1,"");
+        cout<<"\nКого бы вы хотели загрузить?\n";
+        cin>>nm;
+        s->reincornate(3,nm);
 		}
 	}
 }
